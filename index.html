@@ -1,1 +1,72 @@
-Hello World
+<!DOCTYPE html>
+<HTML>
+<HEAD>
+  <link rel="stylesheet" href="styles.css">
+</HEAD>
+<BODY>
+  <div class="form-style-6">
+    
+    <img src='./Icon-App-29x29@2x.png' />
+    <h1>Boardfly support</h1>
+    <form name="mail">
+      <input required type="text" name="name" placeholder="Your name" />
+      <input required type="email" name="email" placeholder="Email address" />
+      <textarea required name="body" placeholder="Type your message"></textarea>
+      <input id="sendButton" type="submit" value="Send" onclick="messageSender(event)" />
+    </form>
+  </div>
+  <script type="text/javascript">
+    var sendButton = document.getElementById('sendButton');
+    var nameField = document.forms["mail"]["name"];
+    var emailField = document.forms["mail"]["email"];
+    var bodyField = document.forms["mail"]["body"];
+    var timerId, timerId2;
+    var sending = false;
+    function messageSender(e) {
+      e.preventDefault();
+      if (!nameField.checkValidity()) return;
+      if (!emailField.checkValidity()) return;
+      if (!bodyField.checkValidity()) return;
+      if (sending) return;
+      timerId = setInterval(sendMessage, 1000);
+      timerId2 = setTimeout(function () {
+        clearInterval(timerId);
+        sending = false;
+        sendButton.value = 'Send';
+        alert('Something went wrong and your message has not been sent. Sorry. You can try again or email directly to boardfly.app@gmail.com')
+      }, 10000);
+      sendMessage();
+    }
+
+    function sendMessage() {
+      console.log('sending message');
+      sending = true;
+      sendButton.value = 'Sending...';
+      var xhr = new XMLHttpRequest();
+      xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4 && xhr.status === 0 || 200) {
+          clearInterval(timerId);
+          clearInterval(timerId2);
+          nameField.remove();
+          emailField.remove();
+          bodyField.remove();
+          var sentDiv = document.createElement("div");
+          sentDiv.className = "sentDiv";
+          sentDiv.innerHTML = "Thanks. You message has been sent.";
+          sendButton.parentNode.replaceChild(sentDiv, sendButton);
+        }
+      };
+      var data = JSON.stringify({
+        name: nameField.value,
+        email: emailField.value,
+        body: bodyField.value,
+        subject: `boardfly.github.io ${nameField.value}`,
+      });
+      var url = "https://boardfly-mail.herokuapp.com/";
+      xhr.open("POST", url, true);
+      xhr.setRequestHeader("Content-Type", "application/json");
+      xhr.send(data);
+    }
+  </script>
+</BODY>
+</HTML>
